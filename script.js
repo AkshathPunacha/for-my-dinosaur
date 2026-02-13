@@ -189,96 +189,52 @@ const igObserver = new IntersectionObserver((entries) => {
 
 if (igChat) igObserver.observe(igChat);
 
-// ========== BACKGROUND MUSIC (Web Audio API) ==========
-let audioCtx = null;
+// ========== BACKGROUND MUSIC (YouTube) ==========
+let ytPlayer = null;
 let musicPlaying = false;
-let musicNodes = [];
+let ytReady = false;
 
-function createAmbientMusic() {
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// YouTube IFrame API callback
+window.onYouTubeIframeAPIReady = function () {
+  ytPlayer = new YT.Player('yt-player', {
+    videoId: 'zlt38OOqwDc',
+    playerVars: {
+      autoplay: 0,
+      loop: 1,
+      playlist: 'zlt38OOqwDc',
+      controls: 0,
+      showinfo: 0,
+      modestbranding: 1,
+      rel: 0,
+      fs: 0,
+      playsinline: 1
+    },
+    events: {
+      onReady: function () { ytReady = true; },
+      onStateChange: function (e) {
+        // If video ended, replay
+        if (e.data === YT.PlayerState.ENDED) {
+          ytPlayer.playVideo();
+        }
+      }
+    }
+  });
+};
 
-  const masterGain = audioCtx.createGain();
-  masterGain.gain.value = 0.12;
-  masterGain.connect(audioCtx.destination);
-
-  // Soft romantic chord progression: Am - F - C - G
-  const chords = [
-    [220, 261.63, 329.63],   // Am
-    [174.61, 220, 261.63],   // F
-    [261.63, 329.63, 392],   // C
-    [196, 246.94, 293.66],   // G
-  ];
-
-  const chordDuration = 3;
-  const totalLoop = chords.length * chordDuration;
-
-  function playChordLoop(startTime) {
-    chords.forEach((chord, ci) => {
-      const chordStart = startTime + ci * chordDuration;
-
-      chord.forEach(freq => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-
-        // Soft fade in/out per note
-        gain.gain.setValueAtTime(0, chordStart);
-        gain.gain.linearRampToValueAtTime(0.3, chordStart + 0.8);
-        gain.gain.linearRampToValueAtTime(0.15, chordStart + chordDuration * 0.7);
-        gain.gain.linearRampToValueAtTime(0, chordStart + chordDuration);
-
-        osc.connect(gain);
-        gain.connect(masterGain);
-
-        osc.start(chordStart);
-        osc.stop(chordStart + chordDuration);
-        musicNodes.push(osc);
-      });
-
-      // Add a very soft high octave shimmer
-      const shimmer = audioCtx.createOscillator();
-      const shimmerGain = audioCtx.createGain();
-      shimmer.type = 'sine';
-      shimmer.frequency.value = chord[0] * 2;
-      shimmerGain.gain.setValueAtTime(0, chordStart);
-      shimmerGain.gain.linearRampToValueAtTime(0.05, chordStart + 1);
-      shimmerGain.gain.linearRampToValueAtTime(0, chordStart + chordDuration);
-      shimmer.connect(shimmerGain);
-      shimmerGain.connect(masterGain);
-      shimmer.start(chordStart);
-      shimmer.stop(chordStart + chordDuration);
-      musicNodes.push(shimmer);
-    });
-  }
-
-  // Schedule a few loops ahead
-  const now = audioCtx.currentTime;
-  for (let loop = 0; loop < 20; loop++) {
-    playChordLoop(now + loop * totalLoop);
-  }
-}
-
-function stopMusic() {
-  if (audioCtx) {
-    audioCtx.close();
-    audioCtx = null;
-    musicNodes = [];
-  }
-}
-
-// Update the music toggle button
+// Music toggle button
 const musicBtn2 = document.getElementById('music-toggle');
 if (musicBtn2) {
-  musicBtn2.removeEventListener('click', () => { });
   musicBtn2.addEventListener('click', () => {
     if (!musicPlaying) {
-      createAmbientMusic();
-      musicPlaying = true;
-      musicBtn2.textContent = '🔊';
+      if (ytReady && ytPlayer) {
+        ytPlayer.playVideo();
+        musicPlaying = true;
+        musicBtn2.textContent = '🔊';
+      }
     } else {
-      stopMusic();
+      if (ytPlayer) {
+        ytPlayer.pauseVideo();
+      }
       musicPlaying = false;
       musicBtn2.textContent = '🔇';
     }
