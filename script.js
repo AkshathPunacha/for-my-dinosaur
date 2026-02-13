@@ -6,6 +6,28 @@ window.addEventListener('load', () => {
   }, 2500);
 });
 
+// Live counter since Jan 11, 2026 11:00 AM IST
+const counterStart = new Date('2026-01-11T11:00:00+05:30').getTime();
+function updateCounter() {
+  const now = Date.now();
+  const diff = now - counterStart;
+  if (diff < 0) return;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs = Math.floor((diff % (1000 * 60)) / 1000);
+  const d = document.getElementById('counter-days');
+  const h = document.getElementById('counter-hours');
+  const m = document.getElementById('counter-mins');
+  const s = document.getElementById('counter-secs');
+  if (d) d.textContent = String(days).padStart(2, '0');
+  if (h) h.textContent = String(hours).padStart(2, '0');
+  if (m) m.textContent = String(mins).padStart(2, '0');
+  if (s) s.textContent = String(secs).padStart(2, '0');
+}
+updateCounter();
+setInterval(updateCounter, 1000);
+
 // Floating hearts background
 function createFloatingHearts() {
   const container = document.querySelector('.floating-hearts');
