@@ -223,7 +223,7 @@ window.onYouTubeIframeAPIReady = function () {
     playerVars: {
       autoplay: 0,
       loop: 1,
-      playlist: 'zlt38OOqwDc,2Vv-BfVoq4g',
+      playlist: 'zlt38OOqwDc,2Vv-BfVoq4g,Qdz5n1Xe5Qo,450p7goxZqg,cs1e0fRyI18',
       controls: 0,
       showinfo: 0,
       modestbranding: 1,
